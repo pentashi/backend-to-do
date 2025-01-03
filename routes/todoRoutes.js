@@ -1,17 +1,19 @@
 const express = require('express');
 const Todo = require('../models/Todo');
 const User = require('../models/Users');
+const authenticateToken = require("../middleware/auth")
 const router = express.Router();
 
 // Create a new to-do
-router.post('/todos', async (req, res) => {
+router.post("/todos", authenticateToken, async (req, res) => {
     try {
         const { text, priority, dueDate } = req.body;
 
         const todo = new Todo({
             text,
-            priority: priority || 'Medium', // Default to 'Medium' if not provided
-            dueDate
+            priority: priority || "Medium",
+            dueDate,
+            userId: req.user.id, // Associate todo with logged-in user
         });
 
         const savedTodo = await todo.save();
@@ -20,6 +22,7 @@ router.post('/todos', async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
+
 router.get('/', async (req, res) => {
     res.send("welcome to mern-to-do ")
 })
@@ -59,17 +62,19 @@ router.post('user/signin', async (req, res)=> {
     }
 })
 // Get all to-dos
-router.get('/todos', async (req, res) => {
+router.get("/todos", authenticateToken, async (req, res) => {
     try {
-        const todos = await Todo.find();
+        // Fetch todos specific to the logged-in user
+        const todos = await Todo.find({ userId: req.user.id });
         res.json(todos);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
+
 // Update a to-do
-router.patch('/todos/:id', async (req, res) => {
+router.patch('/todos/:id', authenticateToken, async (req, res) => {
     try {
         const todo = await Todo.findById(req.params.id);
         if (req.body.text) {

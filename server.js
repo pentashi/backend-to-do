@@ -13,6 +13,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use('/api', todoRoutes); // Ensure this line is present and correct
+app.use('/api/auth', require('./routes/auth'));
+
 
 // MongoDB Atlas Connection
 mongoose
