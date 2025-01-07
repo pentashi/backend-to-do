@@ -26,41 +26,7 @@ router.post("/todos", authenticateToken, async (req, res) => {
 router.get('/', async (req, res) => {
     res.send("welcome to mern-to-do ")
 })
-//trash
-router.post('/user/signup', async (req, res) => {
-    
-    try {
-        const { name, password } = req.body;
-        const user = new User({
-            name,password
-        })
-        
-        const saveUser = await user.save();
-        res.status(201).json(saveUser)
-    }
-    catch (err) {
-        res.status(400).json({ message: err.message });
 
-    }
-})
-
-router.post('user/signin', async (req, res)=> {
-    try {
-        const { name, password } = req.body;
-
-        const compare = await User.findOne({ name: req.body(name) })
-        if (compare) {
-            res.status(400).json({message: "user already exists"})
-        }
-        else {
-            res.status(200).json({message: "succesfull login"})
-        }
-        
-    }
-    catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-})
 // Get all to-dos
 router.get("/todos", authenticateToken, async (req, res) => {
     try {

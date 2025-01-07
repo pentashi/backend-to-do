@@ -14,19 +14,26 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+    select: false,
   },
+  refreshToken: {
+    type: String,
+    select: false
+  }
 });
 
-// Pre-save middleware to hash passwords before saving
+// Modify the pre-save middleware to avoid double hashing
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next(); // Skip if password is not modified
+  // Only hash the password if it's being modified and isn't already hashed
+  if (!this.isModified('password') || this.password.startsWith('$2b$')) {
+    return next();
+  }
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Method to compare passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
