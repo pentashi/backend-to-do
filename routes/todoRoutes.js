@@ -43,12 +43,24 @@ router.get("/todos", authenticateToken, async (req, res) => {
 router.patch('/todos/:id', authenticateToken, async (req, res) => {
     try {
         const todo = await Todo.findById(req.params.id);
+        if (!todo) {
+            return res.status(404).json({ message: 'Todo not found' });
+        }
+
+        // Update fields if they are provided in the request body
         if (req.body.text) {
             todo.text = req.body.text;
         }
-        if (req.body.completed !== undefined) {
-            todo.completed = req.body.completed;
+        if (req.body.priority) {
+            todo.priority = req.body.priority; // Update priority if provided
         }
+        if (req.body.dueDate) {
+            todo.dueDate = req.body.dueDate; // Update due date if provided
+        }
+        if (req.body.completed !== undefined) {
+            todo.completed = req.body.completed; // Update completed status if provided
+        }
+
         const updatedTodo = await todo.save();
         res.json(updatedTodo);
     } catch (err) {
