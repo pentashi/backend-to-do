@@ -80,45 +80,30 @@ router.post(
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user and return token
-router.post('/login', loginLimiter, async (req, res) => {
-  console.log('Login attempt:', req.body);
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
+  console.log('Login attempt:', { email, password });
 
   try {
-    console.log('Looking for user with email:', email);
     const user = await User.findOne({ email }).select('+password');
-    console.log('Found user:', user ? 'Yes' : 'No');
-
     if (!user) {
-      return res.status(401).json({ 
-        errors: [{ msg: 'Invalid credentials' }] 
-      });
+      console.log('User not found');
+      return res.status(401).json({ errors: [{ msg: 'Invalid credentials' }] });
     }
 
-    console.log('Stored password hash:', user.password);
-    console.log('Hash version in DB:', user.password.substring(0, 7));
-    
-    console.log('Attempting password comparison...');
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password comparison result:', isMatch);
-
     if (!isMatch) {
-      return res.status(401).json({ 
-        errors: [{ msg: 'Invalid credentials' }] 
-      });
+      console.log('Password does not match');
+      return res.status(401).json({ errors: [{ msg: 'Invalid credentials' }] });
     }
 
-    // Only generate and send tokens if password matches
+    // Generate tokens and respond
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
-
     user.refreshToken = refreshToken;
     await user.save();
 
-    res.status(200).json({
-      accessToken,
-      refreshToken
-    });
+    res.status(200).json({ accessToken, refreshToken });
   } catch (error) {
     console.error('Error in login:', error.message);
     res.status(500).json({ errors: [{ msg: 'Server error' }] });
