@@ -20,10 +20,11 @@ router.post(
   [
     check('name', 'Name is required').trim().not().isEmpty(),
     check('email', 'Please include a valid email').isEmail().normalizeEmail(),
-    check(
-      'password',
-      'Password must be at least 8 characters long and include one number, one special character, and one uppercase letter.'
-    ).matches(/^(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/),
+    check('password')
+      .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
+      .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+      .matches(/[0-9]/).withMessage('Password must contain at least one number')
+      .matches(/[!@#$%^&*]/).withMessage('Password must contain at least one special character'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
