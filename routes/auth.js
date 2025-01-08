@@ -8,9 +8,16 @@ const User = require('../models/Users');
 
 // Rate limiter for auth routes
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per window
+  windowMs: 1 * 60 * 1000, // 15 minutes
+  max: 15, // 5 attempts per window
   message: { errors: [{ msg: 'Too many attempts. Please try again later.' }] }
+});
+
+// Rate limiter for login attempts
+const loginLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 15, // Allow 10 login attempts per minute
+    message: 'Too many login attempts. Please try again later.',
 });
 
 // @route   POST /api/auth/signup
@@ -73,7 +80,8 @@ router.post(
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user and return token
-router.post('/login', authLimiter, async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
+  console.log('Login attempt:', req.body);
   const { email, password } = req.body;
 
   try {
