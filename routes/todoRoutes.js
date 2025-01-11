@@ -1,7 +1,6 @@
 const express = require('express');
 const Todo = require('../models/Todo');
-const User = require('../models/Users');
-const authenticateToken = require("../middleware/auth")
+const authenticateToken = require("../middleware/auth");
 const router = express.Router();
 
 // Create a new to-do
@@ -23,21 +22,16 @@ router.post("/todos", authenticateToken, async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
-    res.send("welcome to mern-to-do ")
-})
-
-// Get all to-dos
-router.get("/todos", authenticateToken, async (req, res) => {
+// Get all to-dos for a specific user
+router.get("/todos/:userId", authenticateToken, async (req, res) => {
     try {
         // Fetch todos specific to the logged-in user
-        const todos = await Todo.find({ userId: req.user.id });
+        const todos = await Todo.find({ userId: req.params.userId });
         res.json(todos);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
-
 
 // Update a to-do
 router.patch('/todos/:id', authenticateToken, async (req, res) => {
@@ -67,7 +61,9 @@ router.patch('/todos/:id', authenticateToken, async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
-router.delete('/todos/:id', async (req, res) => {
+
+// Delete a to-do
+router.delete('/todos/:id', authenticateToken, async (req, res) => {
     try {
         const todo = await Todo.findById(req.params.id);
         if (!todo) {
